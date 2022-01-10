@@ -2,7 +2,7 @@ package home_works.lesson_1_OOP;
 
 public class HomeWork_lesson1 {
     public static void main(String[] arg) {
-        Object[] members = {
+        Competable[] members = {
                 new Human("Василий", 1.1f, 600),
                 new Human("Екатерина", 1.3f, 900),
                 new Robot("Bob", 0.5f, 50),
@@ -18,7 +18,7 @@ public class HomeWork_lesson1 {
                 new Track(600)
         };
 
-        for (Object member : members) {
+        for (Competable member : members) {
             boolean winFlag = true;
             System.out.printf("\n%s вышел на дистанцию\n", member);
             for (Object stage : stages) {
@@ -33,23 +33,13 @@ public class HomeWork_lesson1 {
         }
     }
 
-    private static boolean goToStage(Object member, Object stage) {
+    private static boolean goToStage(Competable member, Object stage) {
         System.out.printf("%s видит: %s\n", member, stage);
         if (stage instanceof Wall) {
-            if (member instanceof Human)
-                return ((Human) member).jump((Wall) stage);
-            if (member instanceof Cat)
-                return ((Cat) member).jump((Wall) stage);
-            if (member instanceof Robot)
-                return ((Robot) member).jump((Wall) stage);
+            return member.jump((Wall) stage);
         }
         if (stage instanceof Track) {
-            if (member instanceof Human)
-                return ((Human) member).run((Track) stage);
-            if (member instanceof Cat)
-                return ((Cat) member).run((Track) stage);
-            if (member instanceof Robot)
-                return ((Robot) member).run((Track) stage);
+            return member.run((Track) stage);
         }
         return false;
     }

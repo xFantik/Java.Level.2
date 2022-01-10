@@ -1,6 +1,6 @@
 package home_works.lesson_1_OOP;
 
-public class Robot {
+public class Robot implements Competable {
     private String name;
     private float maxHeightJump;
     private int maxDistanceRun;

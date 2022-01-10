@@ -1,6 +1,6 @@
 package home_works.lesson_1_OOP;
 
-public class Cat {
+public class Cat implements Competable {
     private String name;
     private float maxHeightJump;
     private int maxDistanceRun;

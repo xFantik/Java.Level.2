@@ -1,6 +1,6 @@
 package home_works.lesson_1_OOP;
 
-public class Human {
+public class Human implements Competable {
 
     private String name;
     private float maxHeightJump;

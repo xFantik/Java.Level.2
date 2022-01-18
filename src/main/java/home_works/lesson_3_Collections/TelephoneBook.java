@@ -1,25 +1,33 @@
 package home_works.lesson_3_Collections;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 public class TelephoneBook {
-    HashMap<String, String> book = new HashMap<>();
+    ArrayList<Entry> book = new ArrayList<>();
 
     public void add(String surname, String phone) {
-        if (book.get(phone) != null) {
-            System.out.println("Этот номер занят. Владелец: "+ book.get(phone));
-        } else
-            book.put(phone, surname);
+        book.add(new Entry(surname, phone));
     }
 
     public void get(String surname) {
-        for (Map.Entry<String, String> entry : book.entrySet()) {
-            if (entry.getValue().equals(surname)) {
-                System.out.println(surname + ": " + entry.getKey());
+        for (Entry entry : book) {
+            if (entry.name.equals(surname)) {
+                System.out.println(entry);
             }
         }
     }
 
+    private static class Entry {
+        String name;
+        String phone;
+        public Entry(String name, String phone) {
+            this.name = name;
+            this.phone = phone;
+        }
 
+        @Override
+        public String toString() {
+            return name + ", phone='" + phone + '\'';
+        }
+    }
 }

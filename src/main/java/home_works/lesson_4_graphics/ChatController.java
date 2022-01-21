@@ -1,8 +1,11 @@
 package home_works.lesson_4_graphics;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
@@ -31,7 +35,7 @@ public class ChatController implements Initializable {
 
     //-----------------тестовые переменные
     private String myName = "Паша";
-    ArrayList<String> testContacts = new ArrayList<>();
+    //  ArrayList<String> testContacts = new ArrayList<>();
     private Dialog currentDialog;
 
 
@@ -40,7 +44,7 @@ public class ChatController implements Initializable {
     @FXML
     public ListView contactList;
 
-    ObservableList<String> observableListContacts;
+    ObservableList<Pane> observableListContacts;
 
     @FXML
     private Label titleText;
@@ -84,20 +88,25 @@ public class ChatController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-
-        observableListContacts = FXCollections.observableList(testContacts);
-        testContacts.add("Вася");
-        testContacts.add("Дима");
-        testContacts.add("Петя");
-        observableListContacts.add("семён");
-        contactList.setItems(observableListContacts);
+        dialogMap.put("Вася", new Dialog());
+        dialogMap.put("Дима", new Dialog());
+        dialogMap.put("Петя", new Dialog());
+        dialogMap.put("Семён", new Dialog());
 
 
-        MultipleSelectionModel<String> langsSelectionModel = contactList.getSelectionModel();
+        updateContactList();
 
-        langsSelectionModel.selectedItemProperty().addListener(new ChangeListener<String>() {
-            public void changed(ObservableValue<? extends String> changed, String oldValue, String newValue) {
-                loadChatList(newValue);
+
+
+
+
+        MultipleSelectionModel<Pane> langsSelectionModel = contactList.getSelectionModel();
+
+        langsSelectionModel.selectedItemProperty().addListener(new ChangeListener<Pane>() {
+            public void changed(ObservableValue<? extends Pane> changed, Pane oldValue, Pane newValue) {
+//                System.out.println(changed);
+                if (newValue != null)
+                    loadChatList(((Label) newValue.getChildren().get(0)).getText());
             }
         });
     }
@@ -122,17 +131,14 @@ public class ChatController implements Initializable {
 
     private void addToChatList(Dialog.Message message) {
         Pane paneInChatList = new Pane();
-
-
         Label messageItem = new Label();
 
-        if (message.getSender().equals(myName)) {                                                   //Если исходящее сообщение
+        if (message.getSender().equals(myName)) {
             messageItem.setStyle("-fx-background-radius: 6; -fx-background-color: #3E7D0850");
             paneInChatList.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         } else {
             paneInChatList.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
             messageItem.setStyle("-fx-background-radius: 6; -fx-background-color: #00FFC450");
-
         }
         messageItem.setPadding(new Insets(6));
         messageItem.setWrapText(true);
@@ -157,8 +163,7 @@ public class ChatController implements Initializable {
         }
 
 
-        System.out.println(name + "прислал новое сообщение");
-
+        System.out.println(name + " прислал новое сообщение");
 
         Dialog d = getDialog(name);
         d.add(new Dialog.Message(name, "тест"), true);
@@ -174,20 +179,25 @@ public class ChatController implements Initializable {
 
 
     private void updateContactList() {
+        if (observableListContacts == null) {
+            observableListContacts = FXCollections.observableArrayList();
+            contactList.setItems(observableListContacts);
+        }
 
+        contactList.getItems().clear();
+        for (Map.Entry<String, Dialog> entry : dialogMap.entrySet()) {
 
-//        try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(ChatApplication.class.getResource("contact-list-item.fxml"));
-//            leftPane = new VBox(fxmlLoader.load());
-//
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+            Pane paneInContactList = new Pane();
+            Label name = new Label();
 
+            name.setText(entry.getKey());
 
-//        observableListContacts.add("Анатолий");
+            if (entry.getValue().hasNewMessages()) {                                                   //Если исходящее сообщение
+                name.setStyle("-fx-background-color: #3E7D0850");
+            }
 
-
+            paneInContactList.getChildren().add(name);
+            contactList.getItems().add(paneInContactList);
+        }
     }
 }

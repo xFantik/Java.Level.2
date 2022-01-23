@@ -5,47 +5,35 @@ import java.util.ArrayList;
 public class Dialog {
     private ArrayList<Message> messages = new ArrayList<>();
     private boolean hasNewMessages;
+    private final String opponent;
 
-    public int size(){
+    public Dialog(String opponent) {
+        this.opponent = opponent;
+    }
+
+    public String getOpponent() {
+        return opponent;
+    }
+
+    public int size() {
         return messages.size();
     }
-    public Message get(int index){
-        if (index==size()-1)            //Если загрузили последнее сообщение
-            hasNewMessages=false;
+
+    public Message get(int index) {
+        if (index == size() - 1) {
+            hasNewMessages = false;
+        }
         return messages.get(index);
     }
-    public void add(Message m){
+
+    public void add(Message m) {
         messages.add(m);
+        if (!m.getSender().equals(ChatController.myName))
+            hasNewMessages = true;
     }
 
-    public void add(Message m, boolean isNew) {
-        add(m);
-        hasNewMessages=isNew;
 
-    }
-
-    public boolean hasNewMessages(){
+    public boolean hasNewMessages() {
         return hasNewMessages;
     }
-
-
-    public static class Message{
-        private final String text;
-        private final String sender;
-
-        public Message(String sender, String text) {
-            this.sender =sender;
-            this.text = text;
-        }
-
-
-        public String getText() {
-            return text;
-        }
-
-        public String getSender() {
-            return sender;
-        }
-    }
-
 }

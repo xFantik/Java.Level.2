@@ -1,40 +1,36 @@
 package home_works.lesson_4_graphics;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 
 import java.net.URL;
 import java.util.*;
 
 public class ChatController implements Initializable {
+    private static final String mainChatName = "Общий чат";
 
 
-    private TreeMap<String, Dialog> dialogMap = new TreeMap<>();
+    private final ArrayList<Dialog> dialogsList = new ArrayList<>();
     static ChatController chatController;
     static int lettersCount = 33;
+    private String lastSender="";
 
 
     //-----------------тестовые переменные
-    private String myName = "Паша";
+    public static String myName = "Паша";
     //  ArrayList<String> testContacts = new ArrayList<>();
     private Dialog currentDialog;
 
@@ -68,11 +64,11 @@ public class ChatController implements Initializable {
             return;
         }
 
-        Dialog.Message message = new Dialog.Message(myName, text);
+        Message message = new Message(myName, text);
 
 
         if (currentDialog == null) {
-            addToChatList(new Dialog.Message("System", "Диалог не выбран"));
+            addToChatList(new Message("System", "Диалог не выбран"));
         } else {
             currentDialog.add(message);
             addToChatList(message);
@@ -87,21 +83,18 @@ public class ChatController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
-        dialogMap.put("Вася", new Dialog());
-        dialogMap.put("Дима", new Dialog());
-        dialogMap.put("Петя", new Dialog());
-        dialogMap.put("Семён", new Dialog());
+        dialogsList.add(new Dialog(mainChatName));
+        currentDialog = getDialog(mainChatName);
+        titleText.setText(mainChatName);
+        dialogsList.add(new Dialog("Вася"));
+        dialogsList.add(new Dialog("Дима"));
+        dialogsList.add(new Dialog("Петя"));
+        dialogsList.add(new Dialog("Семён"));
 
 
         updateContactList();
 
-
-
-
-
         MultipleSelectionModel<Pane> langsSelectionModel = contactList.getSelectionModel();
-
         langsSelectionModel.selectedItemProperty().addListener(new ChangeListener<Pane>() {
             public void changed(ObservableValue<? extends Pane> changed, Pane oldValue, Pane newValue) {
 //                System.out.println(changed);
@@ -109,40 +102,77 @@ public class ChatController implements Initializable {
                     loadChatList(((Label) newValue.getChildren().get(0)).getText());
             }
         });
+
     }
 
     private Dialog getDialog(String name) {
-        if (dialogMap.get(name) == null) {
-            dialogMap.put(name, new Dialog());
+        for (Dialog d : dialogsList) {
+            if (d.getOpponent().equals(name))
+                return d;
         }
-        return dialogMap.get(name);
+        Dialog new_d = (new Dialog(name));
+        dialogsList.add(new_d);
+        return new_d;
+
     }
 
-    private void loadChatList(String contactName) {                   //Обновление диалогового окна
+    private void loadChatList(String contactName) {         //Обновление диалогового окна. вызывается выбором контакта в списке
         currentDialog = getDialog(contactName);                    //Подгружаем сохраненный диалог
 
-        titleText.setText(contactName + " на связи");                //меняем заголовок
+        if (currentDialog.getOpponent().equals(mainChatName)) {
+            titleText.setText("Общий чат");                //меняем заголовок окна
 
-        chatList.getItems().clear();                             //очищаем
-        for (int i = 0; i < currentDialog.size(); i++) {        //          и заполняем сообщениями чат
+        } else
+            titleText.setText(contactName + " на связи");                //меняем заголовок окна
+
+        chatList.getItems().clear();                             //очищаем окно чата
+        for (int i = 0; i < currentDialog.size(); i++) {        //          и загружаем сообщения из текущего диалога.
             addToChatList(currentDialog.get(i));
         }
+        ((Pane) contactList.getSelectionModel().getSelectedItem()).getChildren().get(0).setStyle("-fx-background-color: null");
+
+
     }
 
-    private void addToChatList(Dialog.Message message) {
+    private void addToChatList(Message message) {
         Pane paneInChatList = new Pane();
         Label messageItem = new Label();
+        messageItem.setPadding(new Insets(6));
+        messageItem.setStyle("-fx-background-radius: 6;");
 
         if (message.getSender().equals(myName)) {
-            messageItem.setStyle("-fx-background-radius: 6; -fx-background-color: #3E7D0850");
+            messageItem.setStyle(messageItem.getStyle() + "-fx-background-color: #3E7D0850");
             paneInChatList.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         } else {
             paneInChatList.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
-            messageItem.setStyle("-fx-background-radius: 6; -fx-background-color: #00FFC450");
+            if (currentDialog.getOpponent().equals(mainChatName)) {
+                if (!message.getSender().equals(lastSender)){
+                    lastSender=message.getSender();
+                    Label messageName = new Label();
+                    messageName.setText(message.getSender() + ":");
+                    messageName.setFont(new Font(10));
+                    messageItem.setMinWidth(8 * message.getSender().length() + 5);
+                    messageName.setPadding(new Insets(0, 3, 0, 3));
+                    paneInChatList.getChildren().add(messageName);
+                    messageItem.setPadding(new Insets(15, 6, 6, 6));
+
+
+                }
+                messageItem.setOnMouseClicked((MouseEvent mouseEvent) -> {
+//                System.out.println(mouseEvent);
+                    if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+                        inputText.setText(message.getSender() + ", " + inputText.getText());
+                        inputText.requestFocus();
+                        inputText.selectEnd();
+                    }
+                });
+            }
+            messageItem.setStyle(messageItem.getStyle() + MessageColorUtil.getColor(message.getSender()));
+
         }
-        messageItem.setPadding(new Insets(6));
         messageItem.setWrapText(true);
         messageItem.setText(StringUtils.wrapText(message.getText(), lettersCount));
+
         paneInChatList.getChildren().add(messageItem);
         chatList.getItems().add(paneInChatList);
         chatList.scrollTo(chatList.getItems().size() - 1);
@@ -150,28 +180,33 @@ public class ChatController implements Initializable {
 
 
     public void receiveMessage(ActionEvent actionEvent) {
-        Set keys = dialogMap.keySet();
-        dialogMap.keySet();
 
-        int el = (int) (Math.random() * keys.size());
-        String name = "";
-        for (Object key : keys) {
-            if (el == 0) {
-                name = (String) key;
-            }
-            el--;
-        }
+        int el = (int) (Math.random() * (dialogsList.size() + 5));
+        String name;
+        if (el >= dialogsList.size()) {
+            name = mainChatName;
+        } else
+            name = dialogsList.get(el).getOpponent();
 
 
-        System.out.println(name + " прислал новое сообщение");
+
+
+        //System.out.println(name + " прислал новое сообщение");
 
         Dialog d = getDialog(name);
-        d.add(new Dialog.Message(name, "тест"), true);
-
-        if (dialogMap.get(name) == currentDialog) {
-            addToChatList(new Dialog.Message(name, "тест"));
+        String[] texts = {"Привет!", "Как дела?", "Что-то тут скучно!", "А пойдём, погуляем?", "Кто на гору катать?",
+                "Даже не знаю ,что тут написать! Просто очень хочется, чтобы моё сообщение все заметили, поэтому делаю его очень длинным!!"};
+        int rndText = (int) (Math.random() * texts.length);
+        if (name.equals(mainChatName)) {
+            int nameNum = (int) (Math.random() * (dialogsList.size() - 1)) + 1;
+            d.add(new Message(dialogsList.get(nameNum).getOpponent(), texts[rndText]));
+        } else {
+            d.add(new Message(name, texts[rndText]));
         }
 
+        if (getDialog(name) == currentDialog) {
+            addToChatList(currentDialog.get(currentDialog.size() - 1));
+        }
 
         updateContactList();
 
@@ -185,15 +220,20 @@ public class ChatController implements Initializable {
         }
 
         contactList.getItems().clear();
-        for (Map.Entry<String, Dialog> entry : dialogMap.entrySet()) {
+
+        for (Dialog entry : dialogsList) {
 
             Pane paneInContactList = new Pane();
             Label name = new Label();
 
-            name.setText(entry.getKey());
+            name.setText(entry.getOpponent());
 
-            if (entry.getValue().hasNewMessages()) {                                                   //Если исходящее сообщение
+
+            if (entry.hasNewMessages() && !currentDialog.getOpponent().equals(entry.getOpponent())) {
                 name.setStyle("-fx-background-color: #3E7D0850");
+
+            } else {
+                name.setStyle("-fx-background-color: none");
             }
 
             paneInContactList.getChildren().add(name);

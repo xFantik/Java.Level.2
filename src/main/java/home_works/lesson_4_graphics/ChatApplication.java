@@ -5,9 +5,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class ChatApplication extends Application {
@@ -20,10 +22,12 @@ public class ChatApplication extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(ChatApplication.class.getResource("my-chat-view.fxml"));
 //        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/my-chat-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 520, 500);
-        stage.setTitle("MyChat");
+        stage.setTitle("TheBestChat");
         stage.setScene(scene);
         stage.setResizable(false);
+        stage.getIcons().add(new Image(Objects.requireNonNull(ChatApplication.class.getResourceAsStream("new_msg.png"))));
         stage.show();
+
         ChatController.chatController.setProp();
     }
 
